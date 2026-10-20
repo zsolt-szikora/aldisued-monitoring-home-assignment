@@ -21,7 +21,7 @@ public class SensorReadingService {
 
   public SensorReading saveSensorReading(SensorReadingDto sensorReadingDto) {
     var sensor = sensorRepository.findById(sensorReadingDto.sensorId())
-        .orElseThrow(() -> new SensorNotFoundException("Sensor with id " + sensorReadingDto.sensorId() + " not found"));
+        .orElseThrow(() -> new SensorNotFoundException(sensorReadingDto.sensorId()));
     var reading = new SensorReading(sensorReadingDto.value(), sensorReadingDto.timestamp(), sensor);
     return sensorReadingRepository.save(reading);
   }

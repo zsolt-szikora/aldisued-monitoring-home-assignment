@@ -4,6 +4,7 @@ import com.aldisued.iot.monitoring.dto.AlertDto;
 import com.aldisued.iot.monitoring.entity.Alert;
 import com.aldisued.iot.monitoring.entity.Sensor;
 import com.aldisued.iot.monitoring.exception.AlertNotFoundException;
+import com.aldisued.iot.monitoring.exception.SensorNotFoundException;
 import com.aldisued.iot.monitoring.repository.AlertRepository;
 import com.aldisued.iot.monitoring.repository.SensorRepository;
 import java.util.UUID;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AlertService {
+
+  private static final String ALERTS_TOPIC = "alerts";
 
   private final AlertRepository alertRepository;
   private final SensorRepository sensorRepository;
@@ -25,8 +28,12 @@ public class AlertService {
   }
 
   public Alert saveAlert(AlertDto alertDto) {
-    // TODO: Task 6
-    return null;
+    Sensor sensor = requireSensor(alertDto.sensorId());
+    Alert alert = alertRepository.save(new Alert(alertDto.message(), alertDto.timestamp(), sensor));
+    // fire-and-forget after the DB commit: KafkaTemplate's default LoggingProducerListener logs failed sends.
+    // Not atomic with the DB write; a transactional outbox would guarantee delivery.
+    kafkaTemplate.send(ALERTS_TOPIC, alertDto);
+    return alert;
   }
 
   public AlertDto findLastAlertBySensorId(UUID sensorId) {
@@ -35,5 +42,10 @@ public class AlertService {
     var alert = alertRepository.findFirstBySensorOrderByTimestampDescIdDesc(sensorProxy)
         .orElseThrow(() -> new AlertNotFoundException("Alert not found for sensor: " + sensorId));
     return new AlertDto(alert.getSensor().getId(), alert.getMessage(), alert.getTimestamp());
+  }
+
+  private Sensor requireSensor(UUID uuid) {
+    return sensorRepository.findById(uuid)
+        .orElseThrow(() -> new SensorNotFoundException(uuid));
   }
 }
