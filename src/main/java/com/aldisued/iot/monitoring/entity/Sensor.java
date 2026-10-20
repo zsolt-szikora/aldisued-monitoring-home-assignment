@@ -7,7 +7,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -27,7 +29,14 @@ public class Sensor {
   @Enumerated(EnumType.STRING)
   private SensorType type;
 
-  public Sensor() {}
+  @OneToMany(mappedBy = "sensor")
+  private List<Alert> alerts = new ArrayList<>();
+
+  @OneToMany(mappedBy = "sensor")
+  private List<SensorReading> sensorReadings = new ArrayList<>();
+
+  public Sensor() {
+  }
 
   public Sensor(String name, SensorType type) {
     this.name = name;
@@ -59,36 +68,37 @@ public class Sensor {
   }
 
   public List<Alert> getAlerts() {
-    //TODO: Task 2
-    return null;
+    return alerts;
   }
 
   public void setAlerts(List<Alert> alerts) {
-    //TODO: Task 2
+    this.alerts = alerts;
   }
 
   public List<SensorReading> getSensorReadings() {
-    //TODO: Task 2
-    return null;
+    return sensorReadings;
   }
 
   public void setSensorReadings(
       List<SensorReading> sensorReadings) {
-    //TODO: Task 2
+    this.sensorReadings = sensorReadings;
   }
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || getClass() != o.getClass()) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Sensor other)) {
       return false;
     }
-    Sensor sensor = (Sensor) o;
-    return Objects.equals(id, sensor.id) && Objects.equals(name, sensor.name)
-        && type == sensor.type;
+    // id-based equality: an unsaved instance is only equal to itself
+    return id != null && id.equals(other.getId());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, type);
+    // id-based hash: don't add unsaved sensors to hash-based collections, the hash changes on persist
+    return Objects.hashCode(id);
   }
 }
