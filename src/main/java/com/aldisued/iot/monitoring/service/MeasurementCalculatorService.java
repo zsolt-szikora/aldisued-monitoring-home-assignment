@@ -1,6 +1,7 @@
 package com.aldisued.iot.monitoring.service;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalDouble;
 import org.springframework.stereotype.Service;
@@ -18,11 +19,26 @@ public class MeasurementCalculatorService {
     double tolerance = deviation * Math.abs(avgValue);
     return values.stream()
         .filter(v -> Math.abs(v - avgValue) <= tolerance)
-        .toList();  }
+        .toList();
+  }
 
   public List<Double> getMovingAverage(List<Double> data, int windowSize) {
-    // TODO: Task 10
-    return List.of();
+    requireValidWindowSize(windowSize, data.size());
+    List<Double> result = new ArrayList<>();
+    // O(n), at the cost of a small accumulated floating-point rounding error
+    double movingSum = 0;
+    for (int i = 0; i < data.size(); i++) {
+      movingSum += data.get(i);
+      if (i >= windowSize - 1) {
+        result.add(movingSum / windowSize);
+        movingSum -= data.get(i - windowSize + 1);
+      }
+    }
+    return List.copyOf(result);
+    // a precise and perhaps more readable version - with worse O(n*w) complexity:
+    // return
+    //  IntStream.rangeClosed(0, data.size() - windowSize).mapToDouble(from ->
+    //    IntStream.range(from, from + windowSize).mapToDouble(data::get).average().orElseThrow()).boxed().toList();
   }
 
   private static void requireValidDeviation(Double deviation) {
@@ -31,4 +47,12 @@ public class MeasurementCalculatorService {
     }
   }
 
+  private static void requireValidWindowSize(int windowSize, int dataSize) {
+    if (windowSize <= 0) {
+      throw new IllegalArgumentException("windowSize must be greater than 0");
+    }
+    if (windowSize > dataSize) {
+      throw new IllegalArgumentException("windowSize must not be greater than data size");
+    }
+  }
 }
