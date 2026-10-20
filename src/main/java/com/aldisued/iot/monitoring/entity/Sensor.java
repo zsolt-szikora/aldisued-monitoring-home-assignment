@@ -10,20 +10,25 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-@Table(name = "sensors")
+@Table(
+    name = "sensors",
+    uniqueConstraints = @UniqueConstraint(name = Sensor.UK_NAME, columnNames = "name"))
 @Entity
 public class Sensor {
+
+  public static final String UK_NAME = "uk_sensors_name";
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(nullable = false)
+  @Column(nullable = false) // uniqueness: see @Table
   private String name;
 
   @Column(nullable = false)
