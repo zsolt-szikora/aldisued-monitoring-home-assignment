@@ -34,11 +34,13 @@ src/main/java/com/aldisued/iot/monitoring
 ├── controller   REST endpoints
 ├── dto          DTOs
 ├── entity       JPA entities
+├── exception    Domain exceptions
 ├── messaging    Kafka listeners for incoming messages
 ├── repository   Spring Data JPA repositories
 └── service      business logic
 
 src/test/java/com/aldisued/iot/monitoring
+├── controller   Additional controller test
 └── tasks        provided task tests
 ```
 

@@ -25,15 +25,14 @@ public class SensorReadingControllerTest extends IntegrationTestBase {
   private MockMvc mockMvc;
 
   @Test
-  public void postReturnsReadingWithoutSensorCollections() throws Exception {
+  public void postReturnsReadingWithSensorIdOnly() throws Exception {
     mockMvc.perform(post("/sensor-readings")
             .contentType(MediaType.APPLICATION_JSON)
             .content(readingJson(SENSOR_ID)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.value").value(23.45))
-        .andExpect(jsonPath("$.sensor.id").value(SENSOR_ID))
-        .andExpect(jsonPath("$.sensor.alerts").doesNotExist())
-        .andExpect(jsonPath("$.sensor.sensorReadings").doesNotExist());
+        .andExpect(jsonPath("$.sensorId").value(SENSOR_ID))
+        .andExpect(jsonPath("$.sensor").doesNotExist());
   }
 
   @Test
